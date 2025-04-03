@@ -1,0 +1,29 @@
+CREATE TABLE Employees (
+    id INTEGER PRIMARY KEY,
+    first_name TEXT NOT NULL,
+    last_name TEXT NOT NULL,
+    department TEXT NOT NULL,
+    salary REAL NOT NULL
+);
+
+INSERT INTO Employees (first_name, last_name, department, salary) VALUES
+('Alice', 'Johnson', 'Sales', 60000),
+('Bob', 'Smith', 'IT', 75000),
+('Charlie', 'Davis', 'HR', 50000),
+('Diana', 'Miller', 'Sales', 65000),
+('Ethan', 'Brown', 'IT', 80000),
+('Fiona', 'Wilson', 'HR', 55000),
+('George', 'Anderson', 'Marketing', 70000),
+('Hannah', 'Clark', 'Marketing', 72000),
+('Ian', 'Hall', 'Sales', 48000),
+('Jane', 'Evans', 'IT', 90000);
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+A C T U A L    T A S K   3:
+
+SELECT department, COUNT(*) AS total_employees, AVG(salary) AS avg_salary
+FROM Employees
+GROUP BY department
+HAVING AVG(salary) > 50000
+ORDER BY total_employees DESC;

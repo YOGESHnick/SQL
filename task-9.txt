@@ -1,0 +1,58 @@
+STORED PROCEDURE:
+
+DELIMITER $$
+
+CREATE PROCEDURE GetTotalSales(
+    IN startDate DATE, 
+    IN endDate DATE
+)
+BEGIN
+    SELECT SUM(total_amount) AS total_sales 
+    FROM Orders 
+    WHERE order_date BETWEEN startDate AND endDate;
+END $$
+
+DELIMITER ;
+
+
+
+CALL GetTotalSales('2024-01-01', '2024-03-31');
+
+
+
+
+USER - DEFINED FUNCTION:
+----------------------------------------------------------------
+
+DELIMITER $$
+
+CREATE FUNCTION CalculateDiscount(price DECIMAL(10,2), discount_rate DECIMAL(5,2))
+RETURNS DECIMAL(10,2)
+DETERMINISTIC
+BEGIN
+    RETURN price - (price * discount_rate / 100);
+END $$
+
+DELIMITER ;
+
+SELECT product_name, price, 
+       CalculateDiscount(price, 10) AS discounted_price
+FROM Products;
+
+
+
+TABLE VALUED FUNCTION: (IF WE NEED TO RETUR MULTIPLE ROWS OF VALUES)
+----------------------------------------------------------------
+
+DELIMITER $$
+
+CREATE FUNCTION HighValueOrders(minAmount DECIMAL(10,2)) 
+RETURNS TABLE 
+RETURN 
+    SELECT * FROM Orders WHERE total_amount > minAmount;
+
+$$
+DELIMITER ;
+
+
+SELECT * FROM HighValueOrders(500);

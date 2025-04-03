@@ -1,0 +1,129 @@
+S C H E M A     D E S I G N :
+----------------------------------------------------------------    
+
+-- Customers Table
+CREATE TABLE Customers (
+    customer_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Products Table
+CREATE TABLE Products (
+    product_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    price REAL NOT NULL CHECK(price > 0),
+    stock_quantity INTEGER NOT NULL CHECK(stock_quantity >= 0)
+);
+
+-- Orders Table
+CREATE TABLE Orders (
+    order_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    customer_id INTEGER NOT NULL,
+    order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status TEXT CHECK(status IN ('Pending', 'Shipped', 'Delivered')) DEFAULT 'Pending',
+    FOREIGN KEY (customer_id) REFERENCES Customers(customer_id) ON DELETE CASCADE
+);
+
+-- OrderDetails Table (Fixed)
+CREATE TABLE OrderDetails (
+    order_detail_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    order_id INTEGER NOT NULL,
+    product_id INTEGER NOT NULL,
+    quantity INTEGER NOT NULL CHECK(quantity > 0),
+    subtotal REAL,  -- Regular column instead of a generated column
+    FOREIGN KEY (order_id) REFERENCES Orders(order_id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES Products(product_id) ON DELETE CASCADE
+);
+
+
+I N D E X E S :
+----------------------------------------------------------------
+
+CREATE INDEX idx_customers_email ON Customers(email);
+CREATE INDEX idx_orders_customer_id ON Orders(customer_id);
+CREATE INDEX idx_orderdetails_order_id ON OrderDetails(order_id);
+CREATE INDEX idx_orderdetails_product_id ON OrderDetails(product_id);
+
+
+T RI G G E R :
+----------------------------------------------------------------
+
+-- Calculate `subtotal` on Insert
+CREATE TRIGGER calculate_subtotal
+AFTER INSERT ON OrderDetails
+FOR EACH ROW
+BEGIN
+    UPDATE OrderDetails
+    SET subtotal = NEW.quantity * (SELECT price FROM Products WHERE product_id = NEW.product_id)
+    WHERE order_detail_id = NEW.order_detail_id;
+END;
+
+
+T E S T:
+----------------------------------------------------------------
+
+-- Insert Sample Customers
+INSERT INTO Customers (name, email) VALUES 
+('Alice', 'alice@example.com'),
+('Bob', 'bob@example.com');
+
+-- Insert Sample Products
+INSERT INTO Products (name, price, stock_quantity) VALUES 
+('Laptop', 1000.00, 10),
+('Mouse', 25.00, 50),
+('Keyboard', 50.00, 30);
+
+-- Insert an Order for Alice
+INSERT INTO Orders (customer_id) VALUES (1);
+-- Get the last inserted order_id
+INSERT INTO OrderDetails (order_id, product_id, quantity) VALUES 
+(LAST_INSERT_ROWID(), 1, 1), 
+(LAST_INSERT_ROWID(), 2, 2);
+
+-- Check Order Details
+SELECT * FROM OrderDetails;
+
+
+T R A N S A C T I O N S   :
+------------------------------------------------------------------------------------------------
+
+BEGIN TRANSACTION;
+
+-- Step 1: Insert a new order
+INSERT INTO Orders (customer_id) VALUES (1);
+-- Get the last inserted order ID
+SELECT last_insert_rowid();
+
+-- Step 2: Add products to the order
+INSERT INTO OrderDetails (order_id, product_id, quantity)
+VALUES (last_insert_rowid(), 2, 3);
+
+-- Step 3: Reduce stock quantity in Products table
+UPDATE Products 
+SET stock_quantity = stock_quantity - 3
+WHERE product_id = 2;
+
+-- If everything succeeds, commit the transaction
+COMMIT;
+
+
+
+BEGIN TRANSACTION;
+
+-- Step 1: Insert an order
+INSERT INTO Orders (customer_id) VALUES (2);
+SELECT last_insert_rowid();
+
+-- Step 2: Attempt to add product with insufficient stock
+INSERT INTO OrderDetails (order_id, product_id, quantity)
+VALUES (last_insert_rowid(), 3, 1000);  
+
+-- Step 3: Reduce stock (THIS FAILS because stock is too low)
+UPDATE Products 
+SET stock_quantity = stock_quantity - 1000
+WHERE product_id = 3;
+
+-- If stock is negative, ROLLBACK instead of COMMIT
+ROLLBACK;

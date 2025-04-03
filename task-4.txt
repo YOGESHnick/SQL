@@ -1,0 +1,32 @@
+CREATE TABLE Customers (
+    customer_id INTEGER PRIMARY KEY,
+    first_name TEXT NOT NULL,
+    last_name TEXT NOT NULL,
+    email TEXT UNIQUE NOT NULL
+);
+
+CREATE TABLE Orders (
+    order_id INTEGER PRIMARY KEY,
+    customer_id INTEGER,
+    product_name TEXT NOT NULL,
+    amount REAL NOT NULL,
+    order_date TEXT NOT NULL,
+    FOREIGN KEY (customer_id) REFERENCES Customers(customer_id)
+);
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+J O I N S:
+
+INNER JOIN:
+----------------------------------------------------------------
+
+SELECT Customers.first_name, Customers.last_name, Orders.product_name, Orders.amount, Orders.order_date
+FROM Customers
+INNER JOIN Orders ON Customers.customer_id = Orders.customer_id;
+
+LEFT JOIN:
+----------------------------------------------------------------
+SELECT Customers.first_name, Customers.last_name, Orders.product_name, Orders.amount, Orders.order_date
+FROM Customers
+LEFT JOIN Orders ON Customers.customer_id = Orders.customer_id;

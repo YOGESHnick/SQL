@@ -1,0 +1,36 @@
+CREATE TABLE Orders (
+    order_id INTEGER PRIMARY KEY,
+    customer_name TEXT NOT NULL,
+    order_date DATE NOT NULL,
+    total_amount REAL NOT NULL
+);
+
+INSERT INTO Orders (customer_name, order_date, total_amount) VALUES
+('Alice Johnson', '2024-03-01', 250.50),
+('Bob Smith', '2024-03-15', 180.00),
+('Charlie Davis', '2024-03-20', 300.75),
+('Diana Miller', '2024-04-02', 150.25),
+('Ethan Brown', '2024-04-05', 500.00),
+('Fiona Taylor', '2024-04-10', 400.50);
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+A C T U A L    T A S K   6:
+
+SELECT * FROM Orders
+WHERE order_date >= DATE('now', '-600 days');
+
+
+SELECT order_id, customer_name, order_date,
+       JULIANDAY('now') - JULIANDAY(order_date) AS days_since_order
+       FROM Orders;
+
+SELECT order_id, customer_name, order_date,
+       DATE(order_date, '+7 days') AS estimated_delivery
+FROM Orders;
+
+
+SELECT order_id, customer_name, 
+       STRFTIME('%d-%m-%Y', order_date) AS formatted_date
+FROM Orders;

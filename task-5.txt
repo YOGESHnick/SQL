@@ -1,0 +1,31 @@
+CREATE TABLE Employees (
+    emp_id INTEGER PRIMARY KEY,
+    first_name TEXT NOT NULL,
+    last_name TEXT NOT NULL,
+    department TEXT NOT NULL,
+    salary REAL NOT NULL
+);
+
+INSERT INTO Employees (first_name, last_name, department, salary) VALUES
+('Alice', 'Johnson', 'HR', 50000),
+('Bob', 'Smith', 'HR', 60000),
+('Charlie', 'Davis', 'IT', 70000),
+('Diana', 'Miller', 'IT', 90000),
+('Ethan', 'Brown', 'Finance', 75000),
+('Fiona', 'Taylor', 'Finance', 80000);
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+A C T U A L    T A S K   5:
+
+SELECT first_name, last_name, department, salary
+FROM Employees e1
+WHERE salary > (
+    SELECT AVG(salary)
+    FROM Employees e2
+    WHERE e1.department = e2.department
+);
+
+SELECT first_name, last_name, department, salary,
+       (SELECT AVG(salary) FROM Employees e2 WHERE e1.department = e2.department) AS dept_avg_salary
+FROM Employees e1;

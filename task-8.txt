@@ -1,0 +1,63 @@
+CREATE TABLE Employees (
+    emp_id INT PRIMARY KEY,
+    name TEXT,
+    department TEXT,
+    salary INT
+);
+
+INSERT INTO Employees (emp_id, name, department, salary) VALUES
+(1, 'Alice', 'IT', 70000),
+(2, 'Bob', 'IT', 60000),
+(3, 'Carol', 'IT', 50000),
+(4, 'David', 'HR', 65000),
+(5, 'Eve', 'HR', 40000),
+(6, 'Frank', 'Finance', 45000);
+
+
+
+ACTUAL TASK 8:
+----------------------------------------------------------------
+
+Non-Recursive CTE:
+----------------------------------------------------------------
+WITH DepartmentSalary AS (
+    SELECT department, AVG(salary) AS avg_salary
+    FROM Employees
+    GROUP BY department
+)
+SELECT * FROM DepartmentSalary WHERE avg_salary > 50000;
+
+
+Recursive CTE:
+----------------------------------------------------------------
+
+CREATE TABLE OrgChart (
+    emp_id INT PRIMARY KEY,
+    name TEXT,
+    manager_id INT NULL,
+    FOREIGN KEY (manager_id) REFERENCES OrgChart(emp_id)
+);
+
+INSERT INTO OrgChart (emp_id, name, manager_id) VALUES
+(1, 'Alice', NULL),      
+(2, 'Bob', 1),           
+(3, 'Carol', 1),         
+(4, 'David', 2),         
+(5, 'Eve', 2),           
+(6, 'Frank', 3);         
+
+
+WITH RECURSIVE EmployeeHierarchy AS (
+    -- Base Case: Start with the CEO (Alice, manager_id is NULL)
+    SELECT emp_id, name, manager_id, 1 AS level
+    FROM OrgChart
+    WHERE manager_id IS NULL
+    
+    UNION ALL
+    
+    -- Recursive Case: Find employees who report to the previous level
+    SELECT o.emp_id, o.name, o.manager_id, eh.level + 1
+    FROM OrgChart o
+    JOIN EmployeeHierarchy eh ON o.manager_id = eh.emp_id
+)
+SELECT * FROM EmployeeHierarchy;

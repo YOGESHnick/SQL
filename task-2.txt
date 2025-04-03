@@ -1,0 +1,5 @@
+SELECT * FROM Employees 
+WHERE (role = 'Software Engineer' OR role = 'Data Analyst') 
+AND salary > 60000
+ORDER BY salary DESC;
+
